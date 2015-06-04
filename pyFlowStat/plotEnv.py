@@ -104,18 +104,40 @@ def _modifyFigureAxes():
     fig_size        =  [fig_width,fig_height]
     params          = { 'axes.labelsize': 	16,
                         'text.fontsize': 	16,
-              		 'legend.fontsize': 	16,
-              		 'xtick.labelsize': 	14,
-              		 'ytick.labelsize': 	14,
-              		 'figure.figsize': 	fig_size}#,
+              		    'legend.fontsize': 	16,
+              		    'xtick.labelsize': 	14,
+              		    'ytick.labelsize': 	14,
+              		    'figure.figsize': 	fig_size}#,
               		 #'text.usetex': 		True},
     	  			#'font.family': '	sans-serif'}
     _plt.rcParams.update(params)
 
     return 0
 
+
+def setAxLinesBW(ax):
+    """
+    Take each Line2D in the axes, ax, and convert the line style to be 
+    suitable for black and white viewing.
+    """
+    MARKERSIZE = 3
+
+    markers = [ '.', ',', 'o', 'v', '^',
+                '<', '>', '1', '2', '3',
+                '4', '8', 's', 'p', '*',
+                'h', 'H', '+', 'x', 'D',
+                'd', '|', '_']
+
+    for i, line in enumerate(ax.get_lines()):
+        line.set_marker(markers[i])
+        #line.set_markersize(MARKERSIZE)
     
-def cleanupFigure(despine=True, tightenFigure=True):
+    #    _plt.rcParams['legend.numpoints'] = 1
+    #    
+    #    for i, line in enumerate(ax.get_legend().get_lines()):
+    #        line.set_marker(markers[i])
+
+def cleanupFigure(despine=True, tightenFigure=True, outputFormat='projector', addLegend=True):
     """
     Cleans up the figure by:
         1) Removing unnecessary top and right spines using seaborn's `despine` function
@@ -141,16 +163,24 @@ def cleanupFigure(despine=True, tightenFigure=True):
     
     """
     
+    # Get current figure
+    fig = _plt.gcf()
+    
     # Remove extra spline
     if despine:
         _sns.despine()
    
     # Remove the extra white spaces
     if tightenFigure:
-        _plt.gcf().tight_layout()
+        fig.tight_layout()
 
+    if outputFormat is 'projector':
+        for ax in fig.get_axes():
+            setAxLinesBW(ax)
+
+    _plt.legend(loc=0)
     # Redraw the figure
-    _plt.draw()
+    #_plt.draw()
 
     return 0
 
