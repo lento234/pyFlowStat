@@ -59,19 +59,26 @@ def setupPlotEnv(numColors=1,style='ticks'):
     if numColors == 1:
         # Midnight blue 
         flatui = ['#2c3e50']
+    elif numColors == 2:
+        # Alizarin, Peter river
+        flatui = ['#e74c3c', '#3498db']
     elif numColors == 3:
         # Alizarin, Emerald, Peter river
         flatui = ['#e74c3c', '#2ecc71', '#3498db']
-    elif numColors == 9:
+    elif numColors >= 4 and numColors <= 9:
         # Alizarin, Sun Flower, Emerald, Peter river, Wisteria, Midnight blue
         # Asbestos, Green sea, Pumpkin
         flatui = ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db', '#8e44ad','#2c3e50',\
-                  '#7f8c8d', '#16a085', '#d35400']
+                  '#7f8c8d', '#16a085', '#d35400'][:numColors]
     else:
-        return NotImplementedError('Set numColors to 1, 3 or 9.')
+        return NotImplementedError('numColors should be 1 to 9.')
         
-    # Change style according to seaborn style, with flat ui color palette
-    _sns.set(style=style, palette=flatui)
+    # Change style according seaborn style
+    _sns.set_style(style=style)
+
+    # Change color scheme with flat ui color palette
+    _sns.set_palette(flatui, n_colors=numColors)
+    
 
     # Turn interactive on
     _plt.ion()
@@ -79,7 +86,7 @@ def setupPlotEnv(numColors=1,style='ticks'):
     # Adjust the size of the figure
     _modifyFigureAxes()
 
-    return 0
+    return _sns.color_palette(n_colors=numColors)
 
 
 def _modifyFigureAxes():
