@@ -89,59 +89,12 @@ def setupPlotEnv(numColors=1,style='ticks'):
     return _sns.color_palette(n_colors=numColors)
 
 
-def _modifyFigureAxes():
-    """
-    Modify the pyplot rc parameters figure axes according to: 
-        http://wiki.scipy.org/Cookbook/Matplotlib/LaTeX_Examples
-    """
-
-    # Modify plot axes
-    fig_width_pt    = 246.0 # Get this from LaTeX using \showthe\columnwidth
-    inches_per_pt   = 1.0/72.27               # Convert pt to inch
-    golden_mean     = (_np.sqrt(5)-1.0)/2.0         # Aesthetic ratio
-    fig_width       = 2*fig_width_pt*inches_per_pt  # width in inches
-    fig_height      = fig_width*golden_mean      # height in inches
-    fig_size        =  [fig_width,fig_height]
-    params          = { 'axes.labelsize': 	16,
-                        'text.fontsize': 	16,
-              		    'legend.fontsize': 	16,
-              		    'xtick.labelsize': 	14,
-              		    'ytick.labelsize': 	14,
-              		    'figure.figsize': 	fig_size}#,
-              		 #'text.usetex': 		True},
-    	  			#'font.family': '	sans-serif'}
-    _plt.rcParams.update(params)
-
-    return 0
-
-
-def setAxLinesBW(ax):
-    """
-    Take each Line2D in the axes, ax, and convert the line style to be 
-    suitable for black and white viewing.
-    """
-    MARKERSIZE = 3
-
-    markers = [ '.', ',', 'o', 'v', '^',
-                '<', '>', '1', '2', '3',
-                '4', '8', 's', 'p', '*',
-                'h', 'H', '+', 'x', 'D',
-                'd', '|', '_']
-
-    for i, line in enumerate(ax.get_lines()):
-        line.set_marker(markers[i])
-        #line.set_markersize(MARKERSIZE)
-    
-    #    _plt.rcParams['legend.numpoints'] = 1
-    #    
-    #    for i, line in enumerate(ax.get_legend().get_lines()):
-    #        line.set_marker(markers[i])
-
-def cleanupFigure(despine=True, tightenFigure=True, outputFormat='projector', addLegend=True):
+def cleanupFigure(despine=True, tightenFigure=True, addMarkers=False, addLegend=True, labels=None, legendLoc=0):
     """
     Cleans up the figure by:
         1) Removing unnecessary top and right spines using seaborn's `despine` function
         2) Tighten the figure using pyplot's `tight_layout` function
+        3) If outputFormat is projector, add markers to each data points.
 
     Parameters
     ----------
@@ -174,15 +127,56 @@ def cleanupFigure(despine=True, tightenFigure=True, outputFormat='projector', ad
     if tightenFigure:
         fig.tight_layout()
 
-    if outputFormat is 'projector':
+    if addMarkers is True:
         for ax in fig.get_axes():
-            setAxLinesBW(ax)
+            _addMarkers(ax)
 
-    _plt.legend(loc=0)
-    # Redraw the figure
-    #_plt.draw()
+    if addLegend is True:
+        if labels is None:
+            _plt.legend(loc=legendLoc)
+        else:
+            _plt.legend(labels, loc=legendLoc)
 
-    return 0
+
+def _modifyFigureAxes():
+    """
+    Modify the pyplot rc parameters figure axes according to: 
+        http://wiki.scipy.org/Cookbook/Matplotlib/LaTeX_Examples
+    """
+
+    # Modify plot axes
+    fig_width_pt    = 246.0 # Get this from LaTeX using \showthe\columnwidth
+    inches_per_pt   = 1.0/72.27               # Convert pt to inch
+    golden_mean     = (_np.sqrt(5)-1.0)/2.0         # Aesthetic ratio
+    fig_width       = 2*fig_width_pt*inches_per_pt  # width in inches
+    fig_height      = fig_width*golden_mean      # height in inches
+    fig_size        =  [fig_width,fig_height]
+    params          = { 'axes.labelsize':   16,
+                        'text.fontsize':    16,
+                        'legend.fontsize':  10,
+                        'xtick.labelsize':  14,
+                        'ytick.labelsize':  14,#'lines.linewidth':  1.5,
+                        'figure.figsize':   fig_size}#,
+                     #'text.usetex':        True},
+                    #'font.family': '   sans-serif'}
+    _plt.rcParams.update(params)
 
 
+def _addMarkers(ax):
+    """
+    Take each Line2D in the axes, ax, and add markers to the line. 
+    Better for viewing in presentation slides (projectors)
+    """
+
+    # Marker size
+    markerSize = 5
+
+    # Marker types
+    markerTypes = [ 'o', 's', 'D', 'v', '^', '<', 
+                    '>','*', ',', '.', 'p', 'd', ]
+
+    # Set marker for each line
+    for i, line in enumerate(ax.get_lines()):
+        line.set_marker(markerTypes[i])
+        line.set_markersize(markerSize)
 
