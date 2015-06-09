@@ -87,7 +87,7 @@ def cleanupFigure(despine=True, tightenFigure=True, addMarkers=False, addLegend=
             _plt.legend(labels, loc=legendLoc)
             
 
-def getCmap(color, reverse=False):
+def getCmap(color, reverse=False,as_cmap=True):
     """
     Function to return modified (based on seaborn )`matplotlib` colormap.
 
@@ -95,8 +95,18 @@ def getCmap(color, reverse=False):
     ----------
     color   : str
     """
-    if color is 'green':
-         return _sns.cubehelix_palette(start=.5, rot=-.75, light=1,reverse=reverse,as_cmap=True)
+    if color is 'red':
+        return None
+    elif color is 'yellow':
+        return None
+    elif color is 'green':
+        return _sns.cubehelix_palette(start=0.5, rot=-0.75, dark=1.00, light=1.0, reverse=reverse, as_cmap=as_cmap)
+    elif color is 'blue':
+        return None        
+    elif color is 'violet':
+        return _sns.cubehelix_palette(start=1.0, rot=-0.75, dark=0.25, light=0.9, reverse=reverse, as_cmap=as_cmap)
+    elif color is 'coolwarm':
+        return None     
 
 
 def setupPlotEnv(numColors=1,style='ticks'):
