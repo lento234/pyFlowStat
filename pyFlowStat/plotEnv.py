@@ -18,6 +18,87 @@ import seaborn as _sns
 import numpy as _np
 
 
+# CONSTANTS
+RED     = '#e74c3c'
+YELLOW  = '#f1c40f'
+GREEN   = '#2ecc71'
+BLUE    = '#3498db'
+VIOLET  = '#8e44ad'
+DARK    = '#2c3e50'
+GRAY    = '#7f8c8d'
+DARKGREEN = '#16a085'
+ORANGE  = '#d35400'
+
+MARKERTYPES = ['o', 's', 'D', 'v', '^', '<', '>','*', ',', '.', 'p', 'd']
+
+def cleanupFigure(despine=True, tightenFigure=True, addMarkers=False, addLegend=True, 
+                  labels=None, legendLoc=0, addColorbar=False):
+    """
+    Cleans up the figure by:
+        1) Removing unnecessary top and right spines using seaborn's `despine` function
+        2) Tighten the figure using pyplot's `tight_layout` function
+        3) If outputFormat is projector, add markers to each data points.
+
+    Parameters
+    ----------
+    despine : bool, True (default) or False
+
+    tightenFigure : bool, True (default) or False
+                     
+ 
+    See Also
+    --------
+    seaborn.despine : Seaborn's despine function
+
+    pyplot.tight_layout : Function to adjust the subplot padding
+
+   
+    Examples
+    --------
+    >>> cleanupFigure(despine=True, tightenFigure=True)
+    
+    """
+    
+    # Remove extra spline
+    if despine:
+        _sns.despine()
+   
+    # Remove the extra white spaces
+    if tightenFigure:
+        _plt.gcf().tight_layout()
+   
+    # Add colorbar
+    if addColorbar is not False:
+        if type(addColorbar) is bool:
+            _plt.colorbar()
+        else:
+            _plt.colorbar(ticks=addColorbar)
+            
+    # Add markers
+    if addMarkers:
+        for ax in _plt.gcf().get_axes():
+            _addMarkers(ax)
+
+    # Add legend
+    if addLegend:
+        if labels is None:
+            _plt.legend(loc=legendLoc)
+        else:
+            _plt.legend(labels, loc=legendLoc)
+            
+
+def getCmap(color, reverse=False):
+    """
+    Function to return modified (based on seaborn )`matplotlib` colormap.
+
+    Parameters
+    ----------
+    color   : str
+    """
+    if color is 'green':
+         return _sns.cubehelix_palette(start=.5, rot=-.75, light=1,reverse=reverse,as_cmap=True)
+
+
 def setupPlotEnv(numColors=1,style='ticks'):
     """
     Setup the Qualitative plotting environment:
@@ -58,18 +139,19 @@ def setupPlotEnv(numColors=1,style='ticks'):
     # Define the color palatte
     if numColors == 1:
         # Midnight blue 
-        flatui = ['#2c3e50']
+        flatui = [DARK]
     elif numColors == 2:
         # Alizarin, Peter river
-        flatui = ['#e74c3c', '#3498db']
+        flatui = [RED, BLUE]
     elif numColors == 3:
         # Alizarin, Emerald, Peter river
-        flatui = ['#e74c3c', '#2ecc71', '#3498db']
+        flatui = [RED, GREEN, BLUE]
     elif numColors >= 4 and numColors <= 9:
         # Alizarin, Sun Flower, Emerald, Peter river, Wisteria, Midnight blue
         # Asbestos, Green sea, Pumpkin
-        flatui = ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db', '#8e44ad','#2c3e50',\
-                  '#7f8c8d', '#16a085', '#d35400'][:numColors]
+        #flatui = ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db', '#8e44ad','#2c3e50',\
+        #          '#7f8c8d', '#16a085', '#d35400'][:numColors]
+        flatui = [RED, YELLOW, GREEN, BLUE, VIOLET, DARK, GRAY, DARKGREEN, ORANGE]
     else:
         return NotImplementedError('numColors should be 1 to 9.')
         
@@ -89,53 +171,20 @@ def setupPlotEnv(numColors=1,style='ticks'):
     return _sns.color_palette(n_colors=numColors)
 
 
-def cleanupFigure(despine=True, tightenFigure=True, addMarkers=False, addLegend=True, labels=None, legendLoc=0):
+
+def _addMarkers(ax):
     """
-    Cleans up the figure by:
-        1) Removing unnecessary top and right spines using seaborn's `despine` function
-        2) Tighten the figure using pyplot's `tight_layout` function
-        3) If outputFormat is projector, add markers to each data points.
-
-    Parameters
-    ----------
-    despine : bool, True (default) or False
-
-    tightenFigure : bool, True (default) or False
-                     
- 
-    See Also
-    --------
-    seaborn.despine : Seaborn's despine function
-
-    pyplot.tight_layout : Function to adjust the subplot padding
-
-   
-    Examples
-    --------
-    >>> cleanupFigure(despine=True, tightenFigure=True)
-    
+    Take each Line2D in the axes, ax, and add markers to the line. 
+    Better for viewing in presentation slides (projectors)
     """
-    
-    # Get current figure
-    fig = _plt.gcf()
-    
-    # Remove extra spline
-    if despine:
-        _sns.despine()
-   
-    # Remove the extra white spaces
-    if tightenFigure:
-        fig.tight_layout()
 
-    if addMarkers is True:
-        for ax in fig.get_axes():
-            _addMarkers(ax)
+    # Marker size
+    markerSize = 5
 
-    if addLegend is True:
-        if labels is None:
-            _plt.legend(loc=legendLoc)
-        else:
-            _plt.legend(labels, loc=legendLoc)
+    # Set marker for each line
+    for i, line in enumerate(ax.get_lines()):
+        line.set_marker(MARKERTYPES[i])
+        line.set_markersize(markerSize)
 
 
 def _modifyFigureAxes():
@@ -161,22 +210,4 @@ def _modifyFigureAxes():
                     #'font.family': '   sans-serif'}
     _plt.rcParams.update(params)
 
-
-def _addMarkers(ax):
-    """
-    Take each Line2D in the axes, ax, and add markers to the line. 
-    Better for viewing in presentation slides (projectors)
-    """
-
-    # Marker size
-    markerSize = 5
-
-    # Marker types
-    markerTypes = [ 'o', 's', 'D', 'v', '^', '<', 
-                    '>','*', ',', '.', 'p', 'd', ]
-
-    # Set marker for each line
-    for i, line in enumerate(ax.get_lines()):
-        line.set_marker(markerTypes[i])
-        line.set_markersize(markerSize)
 
