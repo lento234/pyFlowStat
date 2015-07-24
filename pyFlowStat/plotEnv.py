@@ -1,4 +1,5 @@
-#-*- coding: utf-8 -*-
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 """
 plotEnv
 =======
@@ -217,25 +218,59 @@ def cleanupFigure(despine=True, tightenFigure=True,):
     _plt.draw()
 
 
-def colorbarParams(drawedges=True, orientation='v', spacing='proportional', **kw):
+def colorbar(ticks,orientation='vertical',splitTicks=False,**kw):
     """
-    Return colorbar parameters
+    Customized colorbar
     """
-    
+
+    # determine colorbar position
     if orientation[0]=='h':
         orientation='horizontal'
         aspect=40
-        pad=0.2
+        if splitTicks:
+            pad=0.25
+        else:
+            pad=0.2
     elif orientation[0]=='v':
         orientation='vertical'
         aspect=25
         pad=0.05
     else:
         ValueError("orientation '%s' unknown" % orientation)
+
+    # Default colorbar params
+    cbParams = {'aspect'       : aspect,
+                'drawedges'    : True,
+                'format'       : '%.2g',
+                'orientation'  : orientation,
+                'pad'          : pad,
+                'spacing'      : 'proportional',
+                'ticks'        : ticks}
+
+    # Modify cb params
+    cbParams.update(kw)
+
+    if cbParams['format'] == 'exp':
+        cbParams['format'] = None # Default
+
+    # Draw colorbar
+    cb = _plt.colorbar(**cbParams)
+
+    # Split ticks 
+    if splitTicks:
+        if orientation[0] == 'h':
+            # Change ticks position
+            if _np.any(ticks<0) and _np.any(ticks>0):
+                for v,t in zip(ticks,cb.ax.xaxis.majorTicks):
+                    if v>0:
+                        t._apply_params(gridOn=False,label1On=False,label2On=True,
+                                        tick1On=False,tick2On=True)
+        elif orientation[0] == 'v':
+            NotImplementedError("orientation 'vertical' not implemented")
+        else:
+            ValueError("orientation '%s' unknown" % orientation)
+
+    # Redraw plot
+    _plt.draw()                    
     
-    colorbarParams = dict(aspect=aspect, drawedges=drawedges,
-                          orientation=orientation, pad=pad, spacing=spacing)
-
-    colorbarParams.update(kw)
-
-    return colorbarParams
+    return cb
