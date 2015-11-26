@@ -63,7 +63,7 @@ except ImportError, e:
         print "\n"
         print "h5py python-package not installed. Install h5py if you want to use the extra HDF5 save and load feature."
         print "\n"
-        
+
 try:
     import modred
     print "Found modred",modred.__version__
