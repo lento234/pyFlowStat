@@ -68,7 +68,7 @@ DEFAULT_RCPARAMS = {'axes.axisbelow'  : True,
                     'xtick.major.size': 6,
                     'xtick.minor.size': 3,
                     'ytick.color'     : '0.15',
-                    'ytick.direction' : 'out',                  
+                    'ytick.direction' : 'out',
                     'ytick.labelsize' : 14,
                     'ytick.major.pad' : 7,
                     'ytick.major.size': 6,
@@ -83,10 +83,10 @@ def set(plotType='line', numColors=1, interactive=True):
 
     numColors : int, or one of {1 (default), 3, 9}
                 The number of colour required for plotting.
-       
+
     interactive : bool
                   Turn plot interactive on
-    
+
     See Also
     --------
     Palette : Line plot
@@ -104,11 +104,11 @@ def set(plotType='line', numColors=1, interactive=True):
 
     # Set matplotlib rc parameters
     rcParams = DEFAULT_RCPARAMS
-    
+
     # Set plot interactive on/off
     rcParams['interactive'] = interactive
-    
-    # Determine plot type 
+
+    # Determine plot type
     if plotType == 'line':
 
         # Set Palette
@@ -147,7 +147,7 @@ def linePlotPalette(numColors):
 
     # Define the color palatte
     if numColors == 1:
-        # Midnight blue 
+        # Midnight blue
         palette = [DARK]
     elif numColors == 2:
         # Alizarin, Peter river
@@ -173,11 +173,13 @@ def surfacePlotPalette():
 
     Sequential colormaps: 1) Cold, 2) Hot
 
-    """    
+    """
 
     return dict(DIV = _mpl.cm.Spectral_r,
-                SEQ_COLD = _mpl.colors.ListedColormap(_mpl.cm.Spectral(_np.arange(128,256))),
-                SEQ_HOT  = _mpl.colors.ListedColormap(_mpl.cm.Spectral_r(_np.arange(128,256))))
+                SEQ_HOT_R  = _mpl.colors.ListedColormap(_mpl.cm.Spectral(_np.arange(0,128))),
+                SEQ_COLD   = _mpl.colors.ListedColormap(_mpl.cm.Spectral(_np.arange(128,256))),
+                SEQ_HOT    = _mpl.colors.ListedColormap(_mpl.cm.Spectral_r(_np.arange(128,256))),
+                SEQ_COLD_R  = _mpl.colors.ListedColormap(_mpl.cm.Spectral_r(_np.arange(0,128))))
 
 
 def cleanupFigure(despine=True, tightenFigure=True,):
@@ -185,31 +187,31 @@ def cleanupFigure(despine=True, tightenFigure=True,):
     Cleans up the figure by:
         1) Removing unnecessary top and right spines using seaborn's `despine` function
         2) Tighten the figure using pyplot's `tight_layout` function
-     
+
     Parameters
     ----------
     despine : bool, True (default) or False
 
     tightenFigure : bool, True (default) or False
-                     
- 
+
+
     See Also
     --------
     seaborn.despine : Seaborn's despine function
 
     pyplot.tight_layout : Function to adjust the subplot padding
 
-   
+
     Examples
     --------
     >>> cleanupFigure(despine=True, tightenFigure=True)
-    
+
     """
-    
+
     # Remove extra spline
     if despine:
         _despine()
-   
+
     # Remove the extra white spaces
     if tightenFigure:
         _plt.gcf().tight_layout()
@@ -256,7 +258,7 @@ def colorbar(ticks,orientation='vertical',splitTicks=False,**kw):
     # Draw colorbar
     cb = _plt.colorbar(**cbParams)
 
-    # Split ticks 
+    # Split ticks
     if splitTicks:
         if orientation[0] == 'h':
             # Change ticks position
@@ -271,6 +273,6 @@ def colorbar(ticks,orientation='vertical',splitTicks=False,**kw):
             ValueError("orientation '%s' unknown" % orientation)
 
     # Redraw plot
-    _plt.draw()                    
-    
+    _plt.draw()
+
     return cb
