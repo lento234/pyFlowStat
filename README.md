@@ -35,7 +35,5 @@ python requirement:
 
 
 Installation:
-    * pip install git+git://github.com/lento234/pyFlowStat.git@dev-lento
+        * pip install git+git://github.com/lento234/pyFlowStat.git@dev-lento
 
-Upgrade:
-        * pip install -U pyFlowStat

@@ -14,7 +14,7 @@ setup(
     url='http://www.carmeliet.arch.ethz.ch/',
     packages=['pyFlowStat'],
     package_data={'pyFlowStat':['ReadIMX64.dll']},
-    long_description=read('README'),
+    long_description=read('README.md'),
     install_requires=['numpy',
                       'scipy',
                       'matplotlib',
