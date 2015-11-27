@@ -7,8 +7,7 @@ Changelog
 ---------
 
 #### 3.1.0.dev :
-
-    * added `plotEnv`: custom plotting wrapper
+    - added `plotEnv`: custom plotting wrapper
 
 Authors
 -------
