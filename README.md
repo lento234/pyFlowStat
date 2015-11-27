@@ -11,9 +11,6 @@ Changelog
 version: 4.0
 =======
 
-Changelog
----------
-
 Authors
 -------
 
