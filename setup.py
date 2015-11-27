@@ -9,7 +9,7 @@ MAINTAINER = 'ETH/EMPA'
 MAINTAINER_EMAIL = 'manickathan@arch.ethz.ch'
 URL = 'http://www.carmeliet.arch.ethz.ch/',
 LICENSE = 'BSD (3-clause)'
-VERSION = '3.1'
+VERSION = '3.1.0.dev'
 
 try:
     from setuptools import setup
@@ -38,11 +38,11 @@ def check_dependencies():
     try:
         import modred
     except ImportError:
-        install_requires.append('modred')        
+        install_requires.append('modred')
     try:
         import h5py
     except ImportError:
-        install_requires.append('h5py')   
+        install_requires.append('h5py')
 
     return install_requires
 
@@ -63,30 +63,10 @@ if __name__ == "__main__":
         package_data={'pyFlowStat':['ReadIMX64.dll']},
         classifiers=[
                      'Intended Audience :: Science/Research',
-                     'License :: OSI Approved :: BSD License',                     
-                     'Operating System :: MacOS',                     
+                     'License :: OSI Approved :: BSD License',
+                     'Operating System :: MacOS',
                      'Operating System :: POSIX :: Linux',
                      'Programming Language :: Python :: 2.7',
                      'Topic :: Scientific/Engineering :: Physics',
                      'Topic :: Scientific/Engineering :: Visualization']
     )
-
-#setup(
-#    name = "pyFlowStat",
-#    version = "3.1",
-#    author='ETH/EMPA',
-#    author_email = "manickathan@arch.ethz.ch",
-#    description = ("Python tools for statistical analyses of flow data"),
-#    license = "GNU General Public License",
-#    url='http://www.carmeliet.arch.ethz.ch/',
-#    packages=['pyFlowStat'],
-#    package_data={'pyFlowStat':['ReadIMX64.dll']},
-#    long_description=read('README.md'),
-#    install_requires=['numpy',
-#                      'scipy',
-#                      'matplotlib',
-#                      'seaborn',
-#                      'modred',
-#                      'h5py'
-#                      ],
-#)

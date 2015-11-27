@@ -2,16 +2,21 @@ pyFlowStat
 ==========
 
     Python tools for statistical analyses of flow data.
+<<<<<<< HEAD
     optimized structure, added license, contrib. files
 
 
 Changelog
 ---------
 version: 4.0
-    * added `plotEnv`: custom plotting wrapper
+=======
+
+Changelog
+---------
 
 Authors
 -------
+
     * Marc Immer (aaa.aaa@aaa.com)
     * Marcel Vonlanthen (aaa.aaa@aaa.com)
     * Lento Manickathan (manickathan@arch.ethz.ch)
