@@ -7,8 +7,10 @@ pyFlowStat
 
 Changelog
 ---------
-version: 4.0
-=======
+
+#### 3.1.0.dev :
+
+- added `plotEnv`: custom plotting wrapper
 
 Authors
 -------
