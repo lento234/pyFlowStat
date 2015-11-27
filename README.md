@@ -2,7 +2,6 @@ pyFlowStat
 ==========
 
     Python tools for statistical analyses of flow data.
-<<<<<<< HEAD
     optimized structure, added license, contrib. files
 
 
