@@ -48,4 +48,8 @@ Installation
 
 To install the development version, run
 
+    pip install pyFlowStat
+
+or alternatively
+
     pip install git+git://github.com/lento234/pyFlowStat.git@dev-lento
