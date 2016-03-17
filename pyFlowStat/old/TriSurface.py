@@ -7,19 +7,19 @@ import numpy as np
 #import matplotlib.tri as tri
 import matplotlib.tri as tri
 
-import pyFlowStat.CoordinateTransformation as coorTrans
-import pyFlowStat.ParserFunctions as ParserFunctions
+import pyFlowStat.old.CoordinateTransformation as coorTrans
+import pyFlowStat.old.ParserFunctions as ParserFunctions
 
 
 
 class TriSurface(object):
     '''
- 
+
     '''
-    
+
     # constructors #
     #--------------#
-    
+
     def __init__(self,
                  time,
                  triSurfaceMesh,
@@ -30,24 +30,24 @@ class TriSurface(object):
         base constructor.
         '''
         self.triSurfaceMesh = triSurfaceMesh
-        
+
         self.data = dict()
         self.data_i = dict()
-        
+
         self.time = float(time)
 
-        # "private" member variable. Don't play with them if you are not sure...        
+        # "private" member variable. Don't play with them if you are not sure...
         self.interType = interpolation
         self.interKind  = kind
         self.projectedField = projectedField
-        
+
     @classmethod
     def readFromFoamFile(cls,
                          varsFile,
                          triSurfaceMesh,
                          time,
                          projectedField=False):
-        '''    
+        '''
         '''
         raise NotImplementedError('TriSurface subclasses should implement readFromFoamFile.')
 
@@ -59,44 +59,44 @@ class TriSurface(object):
                      triSurfaceMesh,
                      time,
                      projectedField=False):
-        '''    
+        '''
         '''
         raise NotImplementedError('TriSurface subclasses should implement readFromHdf5.')
- 
- 
-    @classmethod   
+
+
+    @classmethod
     def readFromVTK(cls,
                     vtkFile,
                     triSurfaceMesh,
                     time,
                     projectedField=False):
         '''
-        '''     
+        '''
         raise NotImplementedError('TriSurface subclasses should implement readFromVTK.')
 
-  
+
     # getters #
     #---------#
     @property
     def x(self):
         return self.triSurfaceMesh.x
-        
-    @property    
+
+    @property
     def y(self):
         return self.triSurfaceMesh.y
-        
+
     @property
     def triangulation(self):
         return self.triSurfaceMesh.triangulation
-        
+
     @property
     def triangles(self):
         return self.triSurfaceMesh.triangles
-        
+
     @property
     def affTrans(self):
         return self.triSurfaceMesh.affTrans
-    
+
     @property
     def linTrans(self):
         return self.triSurfaceMesh.linTrans
@@ -113,83 +113,83 @@ class TriSurface(object):
         '''
         '''
         raise NotImplementedError('TriSurface subclasses should implement component.')
-        
+
     def interpolate(self,x,y,dim):
         '''
         '''
         raise NotImplementedError('TriSurface subclasses should implement interpolate.')
-        
+
     def rawPoints(self):
         '''
         Return the grid points in the source coordinate system.
-        
+
         Returns:
             *rawPoints*: numpy array of shape (N,3)
         '''
         return self.triSurfaceMesh.rawPoints()
-       
-       
+
+
     def area(self):
         '''
         Returns the total area of the surface. See method
-        pyFlowStat.TriSurfaceMesh.area() for more information about the 
+        pyFlowStat.TriSurfaceMesh.area() for more information about the
         algorithm
-        
+
         Returns
             *area*: python float()
              The total area of the mesh.
         '''
         return self.triSurfaceMesh.area()
-        
-        
+
+
     def trapz(self,dim):
         '''
         Return the surface integrate of a given componant using the composite
         trapezoidal rule.
-        
+
         Aguments:
             *dim*: int
              Componant on which the integral is done.
-             
+
         Returns:
             *trapz*: float
-             Definite integral as approximated by trapezoidal rule.        
+             Definite integral as approximated by trapezoidal rule.
         '''
         xtri = self.x[self.triangles]
         ytri = self.y[self.triangles]
         ztri = self.component(dim)[self.triangles]
-        
+
         return np.sum( (0.5*(  (xtri[:,1]+xtri[:,0])*(ytri[:,1]-ytri[:,0])
                               +(xtri[:,2]+xtri[:,1])*(ytri[:,2]-ytri[:,1])
                               +(xtri[:,0]+xtri[:,2])*(ytri[:,0]-ytri[:,2])))
                            *(ztri[:,0]+ztri[:,1]+ztri[:,2])/3.0 )
-        
-        
+
+
 #    def surfIntegralTrap(self,field):
 #        '''
 #        Return the surface integral of field. It use the trapezoidal rule
 #        on each triangle to compute the intergral. Therefore, it is a first
 #        order method.
-#        
+#
 #        Argument:
 #            *field*: numpy array of shape (N,)
-#             field to integrate. 
+#             field to integrate.
 #        '''
 #        xtri = self.x[self.triangles]
 #        ytri = self.y[self.triangles]
 #        ztri = field[self.triangles]
-#        
+#
 #        return np.sum( (0.5*(  (xtri[:,1]+xtri[:,0])*(ytri[:,1]-ytri[:,0])
 #                              +(xtri[:,2]+xtri[:,1])*(ytri[:,2]-ytri[:,1])
 #                              +(xtri[:,0]+xtri[:,2])*(ytri[:,0]-ytri[:,2])))
 #                           *(ztri[:,0]+ztri[:,1]+ztri[:,2])/3.0 )
-                           
-     
+
+
     def rawVars(self):
         '''
         '''
         raise NotImplementedError('TriSurface subclasses should implement rawVars.')
-        
+
 
     def surfaceVars(self):
         '''
@@ -207,14 +207,14 @@ class TriSurface(object):
         '''
         '''
         return mat(self.data[varName])
-        
-        
+
+
     def unmat(self,varName):
         '''
         '''
         return unmat(self.data[varName])
-    
-    
+
+
     def __getitem__(self, key):
         '''
         Getter for key "key" on member dictionnary "data"
@@ -227,34 +227,34 @@ class TriSurface(object):
         Setter for key "key" on member dictionnary "data"
         '''
         self.data[key] = item
-        
+
     # class methods - adders #
     #------------------------#
-        
+
     def addInterpolator(self,interpolation='cubic', kind='geom'):
         '''
         '''
         raise NotImplementedError('TriSurface subclasses should implement addInterpolator.')
-        
-            
-    
+
+
+
     def addField(self,field,fieldname):
         '''
 #        Add a field F of dimension d (e.g: d=3 for a vector filed) to the
 #        current TriSurfaceVector object TSV. The grid of F (N points) must be
 #        identical, in term of number of points and their location, as the grid
 #        of TSV. F will be stored in TSV.data['fieldName'] or TSV['fieldName'].
-#        
+#
 #        Arguments:
 #            *field*: numpy array of shape (N,d).
-#            
+#
 #            *fieldName*: python string.
         '''
         fieldSrc = field
         fieldShape = fieldSrc.shape
         fieldTgt = np.zeros(fieldShape)
 
-        if (self.projectedField==True and len(fieldShape)>1):            
+        if (self.projectedField==True and len(fieldShape)>1):
             if fieldShape[1]==3:
                 for i in range(fieldShape[0]):
                     fieldTgt[i,:] = self.linTrans.srcToTgt(fieldSrc[i,:])
@@ -266,13 +266,13 @@ class TriSurface(object):
                                   [a[2],a[4],a[5]]])
                     B = self.linTrans.srcToTgt(A)
                     fieldTgt[i,:] = np.array([B[0,0],B[0,1],B[0,2],B[1,1],B[1,2],B[2,2]])
-                    
-                
+
+
         else:
             fieldTgt = fieldSrc
         self.data[fieldname] = fieldTgt
-            
-        
+
+
     def addFieldFromFoamFile(self,fieldFile,fieldname):
         '''
 #        Add a field F (shape d) stored in a foamFile to the current
@@ -282,8 +282,8 @@ class TriSurface(object):
         #get field
         fieldSrc = ParserFunctions.parseFoamFile_sampledSurface(fieldFile)
         self.addField(fieldSrc,fieldname)
-        
-        
+
+
     def addFieldFromVTK(self,fieldFile,fieldname):
         '''
 #        Add a field F (shape d) stored in a VTK file to the current
@@ -293,75 +293,75 @@ class TriSurface(object):
         #get field
         points, polygon, fieldSrc = ParserFunctions.parseVTK_ugly_sampledSurface(fieldFile)
         self.addField(fieldSrc,fieldname)
-    
-    
+
+
     def addGradient(self):
         '''
         Calculate and save the gradient at all point of the grid. As expected,
         the dvidz does not exist.
-        '''   
+        '''
         raise NotImplementedError('TriSurface subclasses should implement addGradient.')
 
 
 
-class TriSurfaceDict(dict): 
+class TriSurfaceDict(dict):
     '''
     A class which has the same behavior than a classic python dict(), but it
     can be filled only with object of type TriSurface.
-    
+
     Usage:
         >>> tsDict = TriSurfaceDict()
         >>> tsDict['U'] = myTriSurfaceVectorObject
         >>> tsDict['T'] = myTriSurfaceScalarObject
         >>> tsDict['afloat'] = 12,927
         TypeError: item is not of type "TriSurface"
-    '''      
+    '''
     def __setitem__(self, key, item):
         if isinstance(item,TriSurface):
             super(TriSurfaceDict,self).__setitem__(key, item)
         else:
-            raise TypeError('Item is not of type "TriSurface"')  
-            
- 
+            raise TypeError('Item is not of type "TriSurface"')
+
+
 def getTransformation(viewAnchor,
                       xViewBasis,
                       yViewBasis,
                       srcBasisSrc=[[1,0,0],[0,1,0],[0,0,1]]):
     '''
     Return the affine and linear transfomation object for coordinate
-    transformation from a source coordinate system S to a target coordinate 
+    transformation from a source coordinate system S to a target coordinate
     system T.
-    
+
     Arguments:
         *viewAnchor*: python list or numpy array of shape (3,).
          Location of the origin of T, defined in S.
-         
+
         *xViewBasis*: python list or numpy array of shape (3,).
          x axis of T, defined in S.
-        
+
         *yViewBasis*: python list or numpy array of shape (3,).
          y axis of T, defined in S.
-        
+
         *srcBasisSrc*: python list or numpy array of shape (3,3).
          x,y,z axis of S, defined in S. For advenced user only.
          Default=[[1,0,0],[0,1,0],[0,0,1]]
-          
+
     Returns:
         *affTrans*: AffineTransformation object.
-            
+
         *linTrans*: LinearTransformation object.
     '''
     # check and convert arguments
     srcBasisSrc = np.array(srcBasisSrc,dtype=float)
     if srcBasisSrc.shape!=(3,3):
         raise ValueError('srcBasis must be a 3x3 matrix')
-        
+
     xViewBasis = np.array(xViewBasis,dtype=float)
     yViewBasis = np.array(yViewBasis,dtype=float)
     if xViewBasis.shape!=(3,) or yViewBasis.shape!=(3,):
         raise ValueError('xViewBasis.shape and yViewBasis. ',
                          'shape must be equal to (3,)')
-        
+
     # get the basis and the transformation object
     tgtBasisSrc = np.zeros((3,3))
     tgtBasisSrc[:,0] = xViewBasis
@@ -369,33 +369,33 @@ def getTransformation(viewAnchor,
     tgtBasisSrc[:,2] = np.cross(xViewBasis,yViewBasis)
     afftrans = coorTrans.AffineTransformation(srcBasisSrc,tgtBasisSrc,viewAnchor)
     lintrans = coorTrans.LinearTransformation(srcBasisSrc,tgtBasisSrc)
-    
+
     return afftrans, lintrans
 
-    
+
 def mat(field):
     '''
     return a symmTensor field (shape=[N,6]) or Tensor field (shape=[N,9])
     as a "real" tensor field (shape=[N,3,3]). if "field" is a vector or a
     scalar, nothing is done and return as given.
-    
+
     In the TriSurface ecosystem, a symmTenor field is stored as a line to
     save memory. For consistency, a Tensor field is also stored as a line.
     Nevertheless this memory efficient storing is incompatible with linear
     algebra calculus. Therefore the function mat() converts a tensor like
     field into "real" Tensor field.
-    
+
     Arguments:
         *field*: numpy array. Shape=[N,d], with d an int.
          Field to convert.
-         
+
     Returns:
         *realField* numpy array. shape=[N,3,3]
          Return the field as a "real" tensor. If "field" is not tensor
          like, the field is returned unmodified.
     '''
     tensorType = len(field[0])
-    
+
     if tensorType==6:
         tgt = np.zeros([field.shape[0],3,3])   # target field
         # fill line by line
@@ -412,8 +412,8 @@ def mat(field):
         return tgt
     else:
         return field
-       
-         
+
+
 def unmat(field):
     '''
     Opposite of method mat()...
@@ -427,14 +427,11 @@ def unmat(field):
            fieldType = 'tensor'
     else:
        fieldType = 'notTensor'
-           
+
     # convert field and return it
     if fieldType=='symmTensor':
         return np.hstack(( field[:,0,:] , field[:,1,1:3] , field[:,2,2].reshape(field.shape[0],1) ))
     elif fieldType=='tensor':
         return np.hstack(( field[:,0,:] , field[:,1,:] , field[:,2,:]))
     elif fieldType=='notTensor':
-        return field            
-    
-    
- 
+        return field

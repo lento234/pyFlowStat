@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
-import pyFlowStat.Surface as Surface
+import pyFlowStat.old.Surface as Surface
 
 def PlotField(ax,surface,field,vmin,vmax,offset=[0,0],interpolation='nearest',modifier=None,**kwargs):
     extent=[0,0,0,0]
@@ -14,7 +14,7 @@ def PlotField(ax,surface,field,vmin,vmax,offset=[0,0],interpolation='nearest',mo
     else:
         im=ax.imshow(modifier(surface.data[field]),vmin=vmin,vmax=vmax,interpolation=interpolation,extent=extent,**kwargs)
     return im
-    
+
 def PlotContour(ax,surface,field,vmin,vmax,offset=[0,0], contourlevels=21, contourlabels=11,alpha=.75,**kwargs):
 
     X,Y = surface.getMeshgrid(offset=offset)
@@ -40,7 +40,7 @@ def PlotStreamLine(ax,surface,vmin,vmax,density=10,offset=[0,0],**kwargs):
 
 def PlotColoredStreamLine(ax,surface,vmin,vmax,density=10,offset=[0,0]):
     X,Y = surface.getMeshgrid(offset=offset)
-    
+
     u=np.nan_to_num(np.sqrt(surface.data['Ux']**2+surface.data['Uy']**2))
 
     cnorm=mpl.colors.Normalize(vmin=0,vmax=np.max(u))
@@ -50,9 +50,9 @@ def PlotColoredStreamLine(ax,surface,vmin,vmax,density=10,offset=[0,0]):
 #    return ax.streamplot(X,Y,surface.data['Ux'],surface.data['Uy'],density=density,norm=cnorm,color=u)
 
 def PlotVelocityVectors(ax,surface,scale=1,offset=[0,0],spacing=1,UxKey='Ux',UyKey='Uy',**kwargs):
- 
+
     if 'width' not in kwargs:
         kwargs['width']=0.1
-        
+
     X,Y = surface.getMeshgrid(offset=offset)
     return ax.quiver(X[::spacing,::spacing],Y[::spacing,::spacing],surface.data[UxKey][::spacing,::spacing],surface.data[UyKey][::spacing,::spacing],scale=scale,angles='uv',units='xy',**kwargs)

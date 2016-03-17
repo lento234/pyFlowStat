@@ -6,50 +6,50 @@ extracted from a turbulent flow field
 
 Functions included:
     *nextpow2*
-     calculate the next power of 2. 
-      
+     calculate the next power of 2.
+
     *dofft*
      do an fft.
-      
+
     *movingave*
      Moving average on a signal x with a user defined window size.
-      
+
     *xcorr*
      Cross-corelation of two signal x and y. If x=y, then the auto correlation
      is computed.
-    
+
     *xcorr_fft*
      Same as xcorr but much faster by using a fft.
-    
+
     *twoPointCorr*
-    
+
     *func_exp_correlation*
-    
+
     *func_gauss_correlation*
-    
+
     *fit_exp_correlation*
-    
+
     *calcInegarlScale_expFit*
-    
+
     *calcInegarlScale_trapz*
-    
+
     *calcInegarlScale_simps*
-    
+
     *calcIntegarlScale*
-    
+
     *bandpass*
      Butterworth-Bandpass Filter.
-     
-    
+
+
     *bandstop*
      Butterworth-Bandstop Filter.
-    
+
     *lowpass*
      Butterworth-Lowpass Filter.
-    
+
     *highpass*
     Butterworth-Lowpass Filter.
-    
+
 
 Notes:
     *The functions "bandpass", "bandstop", "lowpass" and "highpass" are copied
@@ -76,7 +76,7 @@ import scipy as sp
 from scipy.optimize import curve_fit
 from scipy.integrate import simps
 
-from pyFlowStat import Statistics as stat
+from pyFlowStat.old import Statistics as stat
 
 #===========================================================================#
 # functions
@@ -371,7 +371,7 @@ def xcorr_fft(x, y=None, maxlags=None, norm='coeff',doDetrend=False,oneSided=Tru
         res=res[(len(res)-1)/2:-1]
         lags = np.arange(0, maxlags)
     return res, lags
-    
+
 def twoPointCorr(x,y,subtractMean=True,norm=False):
     '''
     dot product of two vectors to claculate two point correlation
@@ -385,10 +385,10 @@ def twoPointCorr(x,y,subtractMean=True,norm=False):
     else:
         x_prime=x
         y_prime=y
-    
+
     #cc=np.correlate(x_prime,y_prime)
     #print x_prime.shape
-    
+
     #cc=np.dot(smooth(x_prime,window_len=11),smooth(y_prime,window_len=11))
     cc=np.dot(x_prime,y_prime)
     #print cc.shape
@@ -397,28 +397,28 @@ def twoPointCorr(x,y,subtractMean=True,norm=False):
     else:
         return cc
     #return np.correlate(x_prime,y_prime)
-    
+
 def twoPointCorr_fast(x_prime,y_prime,cc_max):
     '''
     dot product of two vectors to claculate normalized two point correlation
     '''
     cc=np.dot(x_prime,y_prime)
     return cc/cc_max
-    
+
 def func_exp_correlation(x, a):
     np.seterr('ignore')
     res = np.exp(-x/a)
 
     #print res
     return res
-    
+
 def func_gauss_correlation(x, a):
     np.seterr('ignore')
     res = np.exp(-np.pi*x**2/(a**2*4))
 
     #print res
     return res
-    
+
 def func_dblExp_correlation(x,a):
     if len(np.unique(np.diff(x)))>1:
         warnings.warn('x has to be evenly spaced')
@@ -431,7 +431,7 @@ def func_dblExp_correlation(x,a):
                     return res[::2]
                 else:
                     return []
-                
+
     if np.any(x<0):
         x_plus=x[x>=0]
         x_neg=np.abs(x[x<=0])[::-1]
@@ -442,43 +442,43 @@ def func_dblExp_correlation(x,a):
     else:
         res=_func_dblExp_correlation(x,a)
     return res
-    
+
 def fit_exp_correlation(xdata,ydata):
     '''
     Fits an exponential function of shape exp(-x/a) to the data and returns a
-    
+
     Arguments:
         * xdata: x-values (e.g lags)
         * ydata: y-values (e.g auto correlation coefficient)
-        
+
     returns:
         * a: fitter parameter a
         * pcov: The estimated covariance of a.
-    
+
     '''
-    
+
     popt, pcov = curve_fit(func_exp_correlation,xdata,ydata)
     a=popt[0]
     return a,pcov
-    
+
 def fit_gauss_correlation(xdata,ydata):
     '''
     Fits an exponential function of shape exp(-x/a) to the data and returns a
-    
+
     Arguments:
         * xdata: x-values (e.g lags)
         * ydata: y-values (e.g auto correlation coefficient)
-        
+
     returns:
         * a: fitter parameter a
         * pcov: The estimated covariance of a.
-    
+
     '''
-    
+
     popt, pcov = curve_fit(func_gauss_correlation,xdata,ydata)
     a=popt[0]
     return a,pcov
-    
+
 def calcInegralScale_expFit(rho_i,dx):
     lags=np.arange(len(rho_i))
     try:
@@ -489,23 +489,23 @@ def calcInegralScale_expFit(rho_i,dx):
         print("Error - curve_fit failed")
         L=np.nan
     return L,(pcov)
-    
+
 def calcInegralScale_trapz(rho_i,dx):
     L=np.trapz(y=rho_i, x=None, dx=dx, axis=-1)
     return L,()
-    
+
 def calcInegralScale_simps(rho_i,dx):
     L=simps(rho_i,dx=dx)
     return L,()
-    
+
 def calcIntegralScale(rho_i,dx=1.0,method=None):
     '''
     calculates the integral scale
-    
+
     Arguments:
         * rho_i: [array] Normalized autocorrelation coefficients, starting with lag=0, and rho_i=1.0
         * method: [string] Speciefies the method to be used.
-        
+
     returns:
         * L: integral scale
         * params: [tuple] additional output parameters

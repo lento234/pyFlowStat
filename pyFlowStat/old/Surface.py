@@ -9,10 +9,10 @@ import numpy as np
 #import scipy as sp
 import os
 import matplotlib.tri as tri
-from pyFlowStat.TriSurfaceMesh import TriSurfaceMesh
-from pyFlowStat.TriSurfaceVector import TriSurfaceVector
-from pyFlowStat.TriSurfaceScalar import TriSurfaceScalar
-from pyFlowStat.TriSurfaceSymmTensor import TriSurfaceSymmTensor
+from pyFlowStat.old.TriSurfaceMesh import TriSurfaceMesh
+from pyFlowStat.old.TriSurfaceVector import TriSurfaceVector
+from pyFlowStat.old.TriSurfaceScalar import TriSurfaceScalar
+from pyFlowStat.old.TriSurfaceSymmTensor import TriSurfaceSymmTensor
 #from pyFlowStat.TriSurface import parseFoamFile
 
 # special modules
@@ -21,20 +21,20 @@ from ctypes import *
 TypeName = ["Image", "2D-PIV-Vector (header, 4x(Vx,Vy))",
             "2D-Vector (Vx,Vy)", "2D-PIV+p.ratio (header, 4x(Vx,Vy), peakratio)",
           "3D-Vector (Vx,Vy,Vz)", "3D-Vector+p.ratio (header, 4x(Vx,Vy), peakratio)"]
-          
+
 WORD=c_ushort
- 
+
 class AttributeList(Structure):
     '''
-    ctypes wrapper Davis VC7 struct AttributeList 
-    
+    ctypes wrapper Davis VC7 struct AttributeList
+
     #typedef struct AttributeList
     {
        char*          name;
        char*          value;
        AttributeList* next;
     } AttributeList;
-    
+
     '''
     def __getattr__(self, key):
         if key=='pairs':
@@ -44,7 +44,7 @@ class AttributeList(Structure):
             return self.as_dict()
         else:
             raise AttributeError(u"Does not have %s atribute" % key)
-            
+
     def get_pairs(self):
         att = self
         self.pairs = []
@@ -54,14 +54,14 @@ class AttributeList(Structure):
                 att = att.next[0]
             except ValueError:
                 break
-    
+
     def as_dict(self):
         self.get_pairs()
         return dict(self.pairs)
-        
+
     def delete(self):
         del_attributelist(self)
-        
+
 AttributeList._fields_=[("name",c_char_p),("value",c_char_p),("next",POINTER(AttributeList))]
 
 
@@ -80,7 +80,7 @@ class _bufarray(Union):
 class BufferScaleType(Structure):
     '''
     ctypes wrapper for Davis VC7 struct BufferScaleType
-    
+
     typedef struct
     {
     	float	factor;
@@ -88,7 +88,7 @@ class BufferScaleType(Structure):
     	char	description[16];
     	char	unit[16];
     } BufferScaleType;
-    
+
     '''
     _fields_=[("factor",c_float),("offset",c_float),("description",c_char*16),
               ("unit",c_char*16)]
@@ -97,7 +97,7 @@ class BufferScaleType(Structure):
 class BufferType(Structure):
     '''
     ctypes wrapper for Davis VC7 class BufferType
-    
+
     typedef struct
     {
       int         isFloat;
@@ -115,7 +115,7 @@ class BufferType(Structure):
     	BufferScaleType	scaleI;		// intensity scale
     	bool*			bMaskArray;			// mask array, NULL if no mask exists
     } BufferType;
-    
+
     '''
     _anonymous_ = ("bufarray",)
     _fields_=[("isFloat",c_int),("ny",c_int),("nx",c_int),("nz",c_int),("nf",c_int),
@@ -139,14 +139,14 @@ def getMode(buf,theX_,theY_,width_,frameOffset):
 class Surface(object):
     '''
     Holds 2D data on a equidistant,cartesian grid
-    
+
     Attributes:
       * vx,vy,vz (numpy ndarray): velocity data, saved on cell center.
       * dx,dy (float): cell size, in mm.
       * minX,maxX,minY,maxY (float): min/max position of cell centers in mm.
       * extent (list of floats): [minX-dx/2,maxX+dx/2,minY-dy/2,maxY+dy/2] in mm.
       * data (dict): dictionary to hold processed data, created by createDataDict().
-        
+
     Note: Units for distances have to be in mm (dx,dy,minX,maxX,minY,maxY and extent)
     in order for gradients to be calculated correctly.
     '''
@@ -154,9 +154,9 @@ class Surface(object):
         self.vx=[]
         self.vy=[]
         self.vz=[]
-        
+
         self.dx = float()
-        self.dy = float()        
+        self.dy = float()
 
         self.minX = float()
         self.maxX = float()
@@ -206,7 +206,7 @@ class Surface(object):
         Umag = np.zeros(self.data['Ux'].shape)
         Umag = np.sqrt(self.data['Ux']**2+self.data['Uy']**2+self.data['Uz']**2)
         self.data['Umag']=Umag
-        
+
     def generateUmagFluct(self):
         try:
             Umag = np.zeros(self.data['ux'].shape)
@@ -215,12 +215,12 @@ class Surface(object):
         except KeyError as err:
             print err.message
             print 'add fluctuating field using addReynoldsDecomposition()'
-        
+
     def generateUmag2D(self):
         Umag2D = np.zeros(self.data['Ux'].shape)
         Umag2D = np.sqrt(self.data['Ux']**2+self.data['Uy']**2)
         self.data['Umag2D']=Umag2D
-        
+
     def generateFields(self):
         '''
         Generates additional dictionary entries.
@@ -235,13 +235,13 @@ class Surface(object):
         self.computeOWQ()
         self.computeLambda2()
         self.computeDivergence()
-        
+
         self.data['KE']=0.5*(self.vx**2+self.vy**2+self.vz**2)
-        
+
         #self.computeGradients(method='r')
         #self.computeGradients(method='ls')
-        
-        
+
+
 #        tensorS= np.empty(self.data['Ux'].shape)
 #        tensorW= np.empty(self.data['Ux'].shape)
 #        tensorS= 0.5*[[dudx+dudx,dudy+dvdx],[dvdx+dudy,dvdy+dvdy]]
@@ -251,23 +251,23 @@ class Surface(object):
         dudx=self.data['dudx'+postfix]
         dvdy=self.data['dvdy'+postfix]
         self.data['Div2D'+postfix]=dudx+dvdy
-        
+
     def computeGradients(self,method='numpy'):
         '''
         Compute the gradient for the velocity componant Ux and Uy. The gradients
         are stored in self.data with the key "dudx", "dudy", "dvdx", "dvdy".
         If method is set to "ls" or "r", the new keys have a trailing "_ls" or
         "_r" respectively.
-            
-        Arguments:          
+
+        Arguments:
             *method*: string
              Method use to compute the gradient. "numpy" uses the function
              numpy.gradient. "ls" is a least-square method. "r" is something
              else. Default: method='numpy'
-             
+
         Returns:
             None
-             
+
         '''
         if method=='numpy':
             dudy,dudx=np.gradient(self.vx,-self.dy/1000,self.dx/1000)
@@ -281,7 +281,7 @@ class Surface(object):
             dvdy_r = np.zeros(self.data['Uy'].shape)
             dudy_r = np.zeros(self.data['Ux'].shape)
             dvdx_r = np.zeros(self.data['Uy'].shape)
-            
+
             for i in range(2,self.data['Ux'].shape[0]-2):
                 for j in range(2,self.data['Ux'].shape[1]-2):
                     dudx_r[i,j]=(self.data['Ux'][i,j-2]-8.0*self.data['Ux'][i,j-1]+8.0*self.data['Ux'][i,j+1]-self.data['Ux'][i,j+2])/(12.0*self.dx/1000.0)
@@ -298,7 +298,7 @@ class Surface(object):
             self.data['dvdy_r']=dvdy_r
             self.data['dvdx_r']=dvdx_r
             self.data['dudy_r']=dudy_r
-        
+
         elif method=='ls':
             dudx_ls = np.zeros(self.data['Ux'].shape)
             dudy_ls = np.zeros(self.data['Ux'].shape)
@@ -316,7 +316,7 @@ class Surface(object):
             for i in range(2,self.data['Uy'].shape[0]-2):
                 for j in range(2,self.data['Uy'].shape[1]-2):
                     dvdx_ls[i,j]=(2.0*self.data['Uy'][i,j+2]+self.data['Uy'][i,j+1]-self.data['Uy'][i,j-1]-2.0*self.data['Uy'][i,j-2])/(10.0*self.dx/1000.0)
-                    
+
             self.data['dudx_ls']=dudx_ls
             self.data['dudy_ls']=dudy_ls
             self.data['dvdx_ls']=dvdx_ls
@@ -332,31 +332,31 @@ class Surface(object):
                 self.data.pop(k)
             if k.startswith('dvdy'):
                 self.data.pop(k)
-        
+
     def computeQ(self):
-        
+
         dudy=self.data['dudy']
         dudx=self.data['dudx']
         dvdy=self.data['dvdy']
         dvdx=self.data['dvdx']
         #self.data['Q']=np.zeros(self.data['Ux'].shape)
         self.data['Q']=0.5*(-2.0*dudy*dvdx-dudx**2-dvdy**2)
-        
+
     def computeSignedQ(self):
         Q_sign=self.data['Q'].copy()
         Q_sign[Q_sign<0]=0.0
         Q_sign[self.data['VortZ']<0]=Q_sign[self.data['VortZ']<0]*-1.0
         self.data['Q_sign']=Q_sign
-        
+
     def computeSwirlingStrength(self):
-        
+
         dudy=self.data['dudy']
         dudx=self.data['dudx']
         dvdy=self.data['dvdy']
         dvdx=self.data['dvdx']
         #self.data['Q']=np.zeros(self.data['Ux'].shape)
         self.data['SwirlingStrength^2']=(1.0/(4.0*dudx))**2+(1.0/(4.0*dvdy))**2-0.5*dudx*dvdy+dvdx*dudy
-        
+
     def computeOWQ(self):
         '''
         Okubo-Weiss
@@ -367,21 +367,21 @@ class Surface(object):
         dvdx=self.data['dvdx']
         #self.data['Q']=np.zeros(self.data['Ux'].shape)
         self.data['OW-Q']=(dudx-dvdy)**2+(dudy+dvdx)**2-(dvdx-dudy)**2
-        
+
     def computeLambda2(self):
         dudy=self.data['dudy']
         dudx=self.data['dudx']
         dvdy=self.data['dvdy']
         dvdx=self.data['dvdx']
         self.data['lambda2'] = self.getLambda2(dudx,dudy,dvdx,dvdy)
-        
+
     def computeVorticity(self):
-        
+
         dudy=self.data['dudy']
         dvdx=self.data['dvdx']
         vort_z=dvdx-dudy
         self.data['VortZ']=vort_z
-        
+
     def getLambda2(self,dudx,dudy,dvdx,dvdy):
         S11 = dudx
         S12 = 0.5*(dudy+dvdx)
@@ -451,7 +451,7 @@ class Surface(object):
 
     def addQuadrants(self,thr=0.0):
         '''
-        
+
         '''
         ux_pos=self.data['ux'].copy()
         ux_neg=self.data['ux'].copy()
@@ -467,12 +467,12 @@ class Surface(object):
         quadrant1=ux_neg*uy_pos
         quadrant2=ux_neg*uy_neg
         quadrant3=ux_pos*uy_neg
-        
+
         self.data['Q0_out']=quadrant0
         self.data['Q1_ejection']=quadrant1
         self.data['Q2_in']=quadrant2
         self.data['Q3_sweep']=quadrant3
-            
+
     def readFromVC7(self,filename,v=False):
         '''
         reads PIV vector data in tha Davis format, using the 64bit windows DLL
@@ -487,7 +487,7 @@ class Surface(object):
         self.vz=[]
 
         res = ReadIMX64.ReadIM7(filename, byref(tmpBuffer), byref(attributeLst))
-        
+
         #print len(self.attributeLst)
         #attv=att.as_dict()['_SCALE_X']
         #print attv
@@ -588,7 +588,7 @@ class Surface(object):
         self.attributeLst = AttributeList()
         res = ReadIMX64.ReadIM7(filename, byref(tmpBuffer), byref(self.attributeLst))
         s=None
-        
+
         if tmpBuffer.image_sub_type < 0:
             if v:
                 print "Size (ny, nx)"
@@ -608,13 +608,13 @@ class Surface(object):
                 s[:] = np.NAN
             if(tmpBuffer.isFloat):
                 for y in range(0,tmpBuffer.ny):
-                    for x in range(0,tmpBuffer.nx): 
+                    for x in range(0,tmpBuffer.nx):
                         s[x,y] = (tmpBuffer.floatArray[theFrame*tmpBuffer.nx*tmpBuffer.ny+x*tmpBuffer.ny+y]*tmpBuffer.scaleI.factor*scale+tmpBuffer.scaleI.offset)
             else:
                 for y in range(0,tmpBuffer.ny):
                     for x in range(0,tmpBuffer.nx):
                         s[x,y] = (tmpBuffer.wordArray[theFrame*tmpBuffer.nx*tmpBuffer.ny+x*tmpBuffer.ny+y]*tmpBuffer.scaleI.factor*scale+tmpBuffer.scaleI.offset)
-        
+
         ReadIMX64.DestroyBuffer(tmpBuffer)
         self.data[key]=s
 
@@ -634,7 +634,7 @@ class Surface(object):
         zi=zi_ma.filled(np.nan)
 
         return zi
-        
+
     def scaleCoordinates(self,factor):
         self.dx=self.dx*factor
         self.dy=self.dy*factor
@@ -643,7 +643,7 @@ class Surface(object):
         self.maxY=self.maxY*factor
         self.maxX=self.maxX*factor
         self.minY=self.minY*factor
-        
+
     def offsetCoordinates(self,offset=[0,0]):
         self.extent[0]=self.extent[0]-offset[0]
         self.extent[1]=self.extent[1]-offset[0]
@@ -653,13 +653,13 @@ class Surface(object):
         self.maxY=self.maxY-offset[1]
         self.maxX=self.maxX-offset[0]
         self.minY=self.minY-offset[1]
-        
+
     def setExtentFromBounds(self):
         '''
         sets self.extent using cell centers minX,maxX,minY,maxY and self.dx/dy
         '''
         self.extent=[self.minX-(self.dx/2),self.maxX+(self.dx/2),self.minY-(self.dy/2),self.maxY+(self.dy/2)]
-        
+
     def setBoundsFromExtent(self):
         '''
         sets cell centers minX,maxX,minY,maxY using self.extent and self.dx/dy
@@ -668,7 +668,7 @@ class Surface(object):
         self.maxX=self.extent[1]-(self.dx/2)
         self.minY=self.extent[2]+(self.dy/2)
         self.maxY=self.extent[3]-(self.dy/2)
-    
+
     def getMeshgrid(self,offset=[0,0]):
         '''
         returns X and Y meshgrid, usable for contour plotting etc.
@@ -684,7 +684,7 @@ class Surface(object):
 
         X,Y = np.meshgrid(xrange, yrange)
         return X,Y
-        
+
     def readFromFoamFile(self,
                          pointsFile,
                          facesFile,
@@ -702,42 +702,42 @@ class Surface(object):
         Read an OpenFOAM surface (triangulated grid) in the current Surface
         object (cartesian grid). As the "grid" change (tri to cartesian), the
         value must be interpolated.
-        
-        
+
+
         Arguments:
             *pointFile*: python string.
              Point file  generate by OpenFOAM. This is the grid point
              coordinates.
-            
+
             *facesFile*: python string.
              Face file generate by OpenFOAM. It is a list of triangles, which
              compose the grid.
-            
+
             *velFile*: python string.
              Vector file generate by OpenFOAM. This is the data associated with
              each grid point.
-            
+
             *scalarFileList*: python list.
-            
+
             *symTensorFileList*: python list.
-            
+
             *dx*: python float.
              Physical size of a pixel in the Surface class (x discretisation).
              Must be given in mm.
-            
+
             *dy*: python float.
              Physical size of a pixel in the Surface class (y discretisation).
              Must be given in mm.
-            
-            *interpolationMethod*: python string. 
+
+            *interpolationMethod*: python string.
              Interpolation method used to interpolate from the triangulated
              grid to the cartesian grid. "cubic" or "linear". Default="cubic"
-             
+
             *kind*: python string.
              Defines the algorithm used for the cubic interpolation. Choices:
-             "min_E" or "geom". "min_E" should be the more accurate, but it is 
+             "min_E" or "geom". "min_E" should be the more accurate, but it is
              also the most time time consuming.
-             
+
         Returns:
             none
         '''
@@ -749,14 +749,14 @@ class Surface(object):
                                               viewAnchor=viewAnchor,
                                               xViewBasis=xViewBasis,
                                               yViewBasis=yViewBasis)
-                                              
+
         tsv = TriSurfaceVector.readFromFoamFile(varsFile=velFile,
                                                 triSurfaceMesh=tsm,
                                                 time=0,
-                                                projectedField=False)                  
+                                                projectedField=False)
 
         points = np.vstack((tsv.x,tsv.y)).T
-        
+
         print 'Creating Grid and Interpolator'
         if dx==None:
             dxlist=[a for a in np.abs(np.diff(points[:,0])) if a>0]
@@ -853,14 +853,14 @@ class Surface(object):
                                               viewAnchor=viewAnchor,
                                               xViewBasis=xViewBasis,
                                               yViewBasis=yViewBasis)
-                                              
+
         tsv = TriSurfaceVector.readFromFoamFile(varsFile=varsFile,
                                                 triSurfaceMesh=tsm,
                                                 time=0,
-                                                projectedField=False)                  
+                                                projectedField=False)
 
         points = np.vstack((tsv.x,tsv.y)).T
-        
+
         print 'Creating Grid and Interpolator'
         if dx==None:
             dxlist=[a for a in np.abs(np.diff(points[:,0])) if a>0]
@@ -888,7 +888,7 @@ class Surface(object):
         self.vx=np.flipud(vx_i)
         self.vy=np.flipud(vy_i)
         self.vz=np.flipud(vz_i)
-        
+
         self.dx=dx
         self.dy=dy
         self.minX=MinX
@@ -911,17 +911,17 @@ class Surface(object):
                                kind='min_E'):
         '''
         '''
-        varName=os.path.basename(varsFile)        
+        varName=os.path.basename(varsFile)
         tsm = TriSurfaceMesh.readFromFoamFile(pointsFile=pointsFile,
                                               facesFile=facesFile,
                                               viewAnchor=viewAnchor,
                                               xViewBasis=xViewBasis,
                                               yViewBasis=yViewBasis)
-                                              
+
         tss = TriSurfaceScalar.readFromFoamFile(varsFile=varsFile,
                                                 triSurfaceMesh=tsm,
                                                 time=0,
-                                                projectedField=False)                  
+                                                projectedField=False)
 
         points = np.vstack((tss.x,tss.y)).T
 
@@ -1005,11 +1005,11 @@ class Surface(object):
                                               viewAnchor=viewAnchor,
                                               xViewBasis=xViewBasis,
                                               yViewBasis=yViewBasis)
-                                              
+
         tsst = TriSurfaceSymmTensor.readFromFoamFile(varsFile=varsFile,
                                                      triSurfaceMesh=tsm,
                                                      time=0,
-                                                     projectedField=False)                  
+                                                     projectedField=False)
 
         points = np.vstack((tsst.x,tsst.y)).T
 
@@ -1036,7 +1036,7 @@ class Surface(object):
             cellsY=int((MaxY-MinY)/dy)
             #print cellsX,cellsY
             grid_y, grid_x = np.mgrid[MinY:MaxY:np.complex(0,cellsY),MinX:MaxX:np.complex(0,cellsX)]
-            triang = tsst.triangulation            
+            triang = tsst.triangulation
             uu_bar=self.interpolateField(tsst.txx, grid_x, grid_y, triang, method=interpolationMethod, kind=kind)
             uv_bar=self.interpolateField(tsst.txy, grid_x, grid_y, triang, method=interpolationMethod, kind=kind)
             uw_bar=self.interpolateField(tsst.tyy, grid_x, grid_y, triang, method=interpolationMethod, kind=kind)
@@ -1132,7 +1132,7 @@ def getVC7filelist(directory,nr=0,step=1):
         filelist=filelist[0:min(len(filelist),nr)]
 
     return filelist
-    
+
 def getIM7filelist(directory,nr=0,step=1):
     '''
     Get a list of filenames of PIV vetor data files
@@ -1149,7 +1149,7 @@ def getIM7filelist(directory,nr=0,step=1):
         filelist=filelist[0:min(len(filelist),nr)]
 
     return filelist
-    
+
 def getIM7SurfaceList(directory,nr=0,step=1):
     '''
     Get a list of Surfaces read from PIV data
@@ -1205,23 +1205,23 @@ class IM7(object):
         self.myBuffer = BufferType()
         self.attributeLst = AttributeList()
         self.res = self.ReadIMX64.ReadIM7(filename, byref(self.myBuffer), byref(self.attributeLst))
-        
+
     def nx(self):
         return self.myBuffer.nx
-        
+
     def ny(self):
         return self.myBuffer.ny
-        
+
     def nf(self):
         return self.myBuffer.nf
-        
+
     def imageSubType(self):
         BufferFormat_t=dict()
         BufferFormat_t["-2"]='BUFFER_FORMAT_MEMPACKWORD'
         BufferFormat_t["-3"]='BUFFER_FORMAT_FLOAT'
         BufferFormat_t["-4"]='BUFFER_FORMAT_WORD'
         return BufferFormat_t[str(self.myBuffer.image_sub_type)]
-        
+
     def getData(self,frame,v=False):
         s=None
         if self.myBuffer.image_sub_type < 0:
@@ -1243,17 +1243,17 @@ class IM7(object):
                 s[:] = np.NAN
             if(self.myBuffer.isFloat):
                 for y in range(0,self.myBuffer.ny):
-                    for x in range(0,self.myBuffer.nx): 
+                    for x in range(0,self.myBuffer.nx):
                         s[x,y] = (self.myBuffer.floatArray[theFrame*self.myBuffer.nx*self.myBuffer.ny+x*self.myBuffer.ny+y])
             else:
                 for y in range(0,self.myBuffer.ny):
                     for x in range(0,self.myBuffer.nx):
                         s[x,y] = (self.myBuffer.wordArray[theFrame*self.myBuffer.nx*self.myBuffer.ny+x*self.myBuffer.ny+y])
         return s
-        
-    def __del__(self):        
+
+    def __del__(self):
         self.ReadIMX64.DestroyBuffer(self.myBuffer)
-    
+
 
 class SurfaceTimeSeries(object):
     '''
@@ -1264,7 +1264,7 @@ class SurfaceTimeSeries(object):
         self.vy=[]
         self.vz=[]
         self.t=[]
-        
+
         self.dx = float()
         self.dy = float()
 
@@ -1276,20 +1276,20 @@ class SurfaceTimeSeries(object):
 
         self.data=dict()
         return
-        
+
     def loadFromSurfaceList(self,slist,frq):
         self.vx=np.array([s.data['Ux'] for s in slist])
         self.vy=np.array([s.data['Uy'] for s in slist])
         self.vz=np.array([s.data['Uz'] for s in slist])
         self.dx=slist[0].dx
-        self.dy=slist[0].dy        
+        self.dy=slist[0].dy
         self.minX=slist[0].minX
         self.maxX=slist[0].maxX
         self.minY=slist[0].minY
         self.maxY=slist[0].maxY
         self.extent=slist[0].extent
-        
+
         self.data['frq']=frq
-        self.data['dt']=1.0/frq       
+        self.data['dt']=1.0/frq
         self.t=np.linspace(0,(self.vx.shape[0]-1)/self.data['frq'],self.vx.shape[0])
         self.data['t'] = self.t

@@ -26,9 +26,9 @@ import scipy as sp
 # special modules
 
 #from pyFlowStat.TurbulenceTools import TurbulenceTools as tt
-import pyFlowStat.PointProbe as pp
-import pyFlowStat.TurbulenceTools as tt
-import pyFlowStat.Surface as Surface
+import pyFlowStat.old.PointProbe as pp
+import pyFlowStat.old.TurbulenceTools as tt
+import pyFlowStat.old.Surface as Surface
 
 
 #=============================================================================#
@@ -170,7 +170,7 @@ def actionPPlist_hdf5(hdf5file,actionFunction):
     '''
     ppList = []
     resultList=[]
-    
+
     fr = h5py.File(hdf5file, 'r')
     try:
         for i in range(len(fr.keys())):
@@ -185,11 +185,11 @@ def actionPPlist_hdf5(hdf5file,actionFunction):
     finally:
         fr.close()
     return resultList
-  
+
 def createPointProbeFromSurfaceTimeSeries(surfaceTimeSeries,frq,i,j,doDetrend=True,createDict=True,genStat=True):
     '''
     Create a PointProbe from time resolved field data for a selected location i,j.
-    adds the velocity vector time series, the times, probeLoc and calls 
+    adds the velocity vector time series, the times, probeLoc and calls
     createDataDict and generateStatistics by default.
 
     Arguments:
@@ -204,7 +204,7 @@ def createPointProbeFromSurfaceTimeSeries(surfaceTimeSeries,frq,i,j,doDetrend=Tr
     Returns:
         * pt: [PointProbe] PointProbe object.
     '''
-    
+
     vel=np.column_stack((surfaceTimeSeries.vx[:,i,j],surfaceTimeSeries.vy[:,i,j],surfaceTimeSeries.vz[:,i,j]))
     #if not np.isnan(vel).any():
     try:
@@ -221,7 +221,7 @@ def createPointProbeFromSurfaceTimeSeries(surfaceTimeSeries,frq,i,j,doDetrend=Tr
     except:
         print "Unexpected error:", sys.exc_info()[0]
         return None
- 
+
 def createFromArray(dt,u,v,w,doDetrend=True):
     '''
     Create a PointProbe from three scalar arrays (velocity components)
@@ -241,6 +241,6 @@ def createFromArray(dt,u,v,w,doDetrend=True):
     endtime=(len(u)-1)*dt
     pt.probeTimes=np.linspace(0,endtime,nrpoints)
     pt.createDataDict()
-    pt.addVectorMagnitude() 
+    pt.addVectorMagnitude()
     pt.generateStatistics(doDetrend=doDetrend)
     return pt

@@ -6,7 +6,7 @@ LineSymmTensor.py
 
 import numpy as np
 
-import pyFlowStat.Line as Line
+import pyFlowStat.old.Line as Line
 
 
 class LineSymmTensor(Line.Line):
@@ -14,7 +14,7 @@ class LineSymmTensor(Line.Line):
     '''
     # constructors #
     #--------------#
-    
+
     def __init__(self,
                  xyz,
                  txx,
@@ -25,7 +25,7 @@ class LineSymmTensor(Line.Line):
                  tzz):
         '''
         base constructor.
-        
+
         Arguments:
             *xyz*: numpy array of shape (npoints,3).
              position vector
@@ -39,12 +39,12 @@ class LineSymmTensor(Line.Line):
         self.tyy = np.asarray(tyy)
         self.tyz = np.asarray(tyz)
         self.tzz = np.asarray(tzz)
-        
+
     # class methods #
     #---------------#
     def __call__(self,dim=0):
         return self.component(dim=dim)
-        
+
     def component(self,dim):
         if dim==0:
             return self.txx
@@ -58,16 +58,15 @@ class LineSymmTensor(Line.Line):
             return self.tyz
         if dim==5:
             return self.tzz
-        
+
     def rawVars(self):
         '''
         Return the scalar field defined in the source coordinate system.
-        
+
         Returns:
             *rawData*: numpy array of shape (N,6)
         '''
         return np.vstack((self.txx,self.txy,self.txz,self.tyy,self.tyz,self.tzz)).T
-        
+
     def TKE(self):
         return 0.5*(self.txx+self.tyy+self.tzz)
-    

@@ -13,8 +13,8 @@ Changelog
 Authors
 -------
 
-    * Marc Immer (aaa.aaa@aaa.com)
-    * Marcel Vonlanthen (aaa.aaa@aaa.com)
+    * Marc Immer (marc.immer@empa.ch)
+    * Marcel Vonlanthen (marcel.vonlanthen@empa.ch)
     * Lento Manickathan (manickathan@arch.ethz.ch)
 
 Dependencies

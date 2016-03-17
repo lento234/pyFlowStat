@@ -26,9 +26,9 @@ import scipy as sp
 # special modules
 
 #from pyFlowStat.TurbulenceTools import TurbulenceTools as tt
-import pyFlowStat.PointProbe as pp
-import pyFlowStat.TurbulenceTools as tt
-import pyFlowStat.Surface as sr
+import pyFlowStat.old.PointProbe as pp
+import pyFlowStat.old.TurbulenceTools as tt
+import pyFlowStat.old.Surface as sr
 
 
 #=============================================================================#
@@ -63,7 +63,7 @@ def saveSurfaceList_hdf5(surfaceList,hdf5file,keyrange='raw',mode='w-'):
          defines which keys will be be saved the hdf5 file. if keyrange='raw',
          only vx,vy and vz are saved, if keyrange='full', 'raw' plus every keys
          in the surface are saved. Default='raw'.
-         
+
     Returns:
         None
     '''
@@ -121,7 +121,7 @@ def loadSurfaceList_hdf5(hdf5file,keyrange='raw',createDict=False):
             * 'dimExtent' (DATASET)
 
     Arguments:
-        *hdf5file*: string 
+        *hdf5file*: string
           path to the source file.
         *keyrange*: string
           Defines which keys will be loaded from the hdf5 file:
@@ -345,33 +345,33 @@ def loadPPfromSurf_hdf5(hdf5fileObj,pixloc,keyrange='raw',createDict=False,dt=1.
 
     return pt
 
-    
+
 def corrField(f1,f2=None,i_ref=0,j_ref=0,norm=True):
     '''
     Two point correlation of an entire field with the point pt(i_ref,j_ref) as
     reference. The field has the dimension of NxM with T time realization.
-    
+
     Arguments:
         *f1*: np.array of shape (T,N,M).
-         In general, one of the fields (vx,vy or vz) of a 
+         In general, one of the fields (vx,vy or vz) of a
          pyFlowStat.SurfaceTimeSeries object.
-    
+
         *f2*: np.array of shape (T,N,M).
          Same as f1. If None, then f1 is used has second field. Default=None
-         
+
         *i_ref*: python int.
          Horizontal location of the reference point. Default=0
-         
+
         *j_ref*: python int.
          Vertical location of the reference point. Default=0
-         
+
         *Norm*: python bool.
          Normalization of the correlation. Default=True.
-         
-         
+
+
     Returns:
         *res*: np.array of shape (N,M).
-         the two point horizontal correlation. 
+         the two point horizontal correlation.
     '''
     f1sum=np.sum(f1,axis=0)
     if f2==None:
@@ -379,7 +379,7 @@ def corrField(f1,f2=None,i_ref=0,j_ref=0,norm=True):
         f2sum=f1sum
     else:
         f2sum=np.sum(f2,axis=0)
-        
+
     res=np.empty(f1[0].shape, dtype=float)
     res[:] = np.nan
     k,dx,dy=f1.shape
@@ -396,31 +396,31 @@ def corrField(f1,f2=None,i_ref=0,j_ref=0,norm=True):
         return res/res[i_ref,j_ref]
     else:
         return res
-        
+
 def corrFieldHorz(f1,f2=None,j_ref=0,norm=True):
     '''
     Do the two point horizontal correlation of an entire field along a vertical
-    line. Each points of the line is used as a reference for the two point 
+    line. Each points of the line is used as a reference for the two point
     correlation. the field has dimension of NxM with T time realization.
-    
+
     Arguments:
         *f1*: np.array of shape (T,N,M).
-         In general, one of the fields (vx,vy or vz) of a 
+         In general, one of the fields (vx,vy or vz) of a
          pyFlowStat.SurfaceTimeSeries object.
-    
+
         *f2*: np.array of shape (T,N,M).
          Same as f1. If None, then f1 is used has second field. Default=None
-         
+
         *j_ref*: python int.
          Horizontal location of the vertical line. Default=0
-         
+
         *Norm*: python bool.
          Normalization of the correlation. Default=True.
-         
-         
+
+
     Returns:
         *res*: np.array of shape (N,M).
-         the two point horizontal correlation. 
+         the two point horizontal correlation.
     '''
     f1sum=np.sum(f1,axis=0)
     if f2==None:
@@ -428,7 +428,7 @@ def corrFieldHorz(f1,f2=None,j_ref=0,norm=True):
         f2sum=f1sum
     else:
         f2sum=np.sum(f2,axis=0)
-        
+
     res=np.empty(f1[0].shape, dtype=float)
     res[:] = np.nan
     k,dx,dy=f1.shape
@@ -443,33 +443,33 @@ def corrFieldHorz(f1,f2=None,j_ref=0,norm=True):
                     res[i,j]=tt.twoPointCorr(x=f1[:,i,j_ref],y=f2[:,i,j],norm=True)
             if norm==True:
                 res[i,:]=res[i,:]/res[i,j_ref]
-      
+
     return res
-    
+
 def corrFieldVert(f1,f2=None,i_ref=0,norm=True):
     '''
     Do the two point vertical correlation of an entire field along an
     horizontal line. Each points of the line is used as a reference for the two
     point correlation. the field has dimension of NxM with T time realization.
-    
+
     Arguments:
         *f1*: np.array of shape (T,N,M).
-         In general, one of the fields (vx,vy or vz) of a 
+         In general, one of the fields (vx,vy or vz) of a
          pyFlowStat.SurfaceTimeSeries object.
-    
+
         *f2*: np.array of shape (T,N,M).
          Same as f1. If None, then f1 is used has second field. Default=None
-         
+
         *i_ref*: python int.
          Vertical location of the horizontal line. Default=0
-         
+
         *Norm*: python bool.
          Normalization of the correlation. Default=True.
-         
-         
+
+
     Returns:
         *res*: np.array of shape (N,M).
-         the two point vertical correlation. 
+         the two point vertical correlation.
     '''
     f1sum=np.sum(f1,axis=0)
     if f2==None:
@@ -477,7 +477,7 @@ def corrFieldVert(f1,f2=None,i_ref=0,norm=True):
         f2sum=f1sum
     else:
         f2sum=np.sum(f2,axis=0)
-       
+
     res=np.empty(f1[0].shape, dtype=float)
     res[:] = np.nan
     k,dx,dy=f1.shape
@@ -492,44 +492,44 @@ def corrFieldVert(f1,f2=None,i_ref=0,norm=True):
                     res[i,j]=tt.twoPointCorr(x=f1[:,i_ref,j],y=f2[:,i,j],norm=True)
             if norm==True:
                 res[:,j]=res[:,j]/res[i_ref,j]
-            
+
     return res
-    
+
 def corrVert(f1,f2=None,i_ref=0,j_ref=0,norm=True):
     '''
     Do the two point vertical correlation from a reference point
     pt(i_ref,j_ref). The field has dimension of NxM with T time realization.
-    
+
     Arguments:
         *f1*: np.array of shape (T,N,M).
-         In general, one of the fields (vx,vy or vz) of a 
+         In general, one of the fields (vx,vy or vz) of a
          pyFlowStat.SurfaceTimeSeries object.
-    
+
         *f2*: np.array of shape (T,N,M).
          Same as f1. If None, then f1 is used has second field. Default=None
-         
+
         *i_ref*: python int.
          Vertical location of the horizontal line. Default=0
-         
+
         *j_ref*: python int.
          Vertical location of the horizontal line. Default=0
-         
+
         *Norm*: python bool.
          Normalization of the correlation. Default=True.
-         
-         
+
+
     Returns:
         *lags_l*: numpy array.
          Array of left/negative lags.
-        
+
         *res_l*: numpy array.
          Array of left/negative results.
-        
+
         *lags_r*: numpy array.
          Array of right/positive lags.
-        
+
         *res_r*: numpy array.
-         Array of right/positive results.       
+         Array of right/positive results.
     '''
     f1sum=np.sum(f1,axis=0)
     if f2==None:
@@ -537,7 +537,7 @@ def corrVert(f1,f2=None,i_ref=0,j_ref=0,norm=True):
         f2sum=f1sum
     else:
         f2sum=np.sum(f2,axis=0)
-    
+
     res=np.empty(f1[0].shape[0], dtype=float)
     res[:] = np.nan
     k,dx,dy=f1.shape

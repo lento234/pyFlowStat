@@ -9,7 +9,7 @@ MAINTAINER = 'ETH/EMPA'
 MAINTAINER_EMAIL = 'manickathan@arch.ethz.ch'
 URL = 'http://www.carmeliet.arch.ethz.ch/',
 LICENSE = 'BSD (3-clause)'
-VERSION = '3.1.0.dev0'
+VERSION = '4.0.1.dev'
 
 try:
     from setuptools import setup
@@ -31,6 +31,10 @@ def check_dependencies():
         import seaborn
     except ImportError:
         install_requires.append('seaborn')
+    try:
+        import modred
+    except ImportError:
+        install_requires.append('modred')
 
     return install_requires
 
@@ -44,7 +48,7 @@ if __name__ == "__main__":
         maintainer_email=MAINTAINER_EMAIL,
         description=DESCRIPTION,
         license=LICENSE,
-        keywords='statistical flow',
+        keywords='flow statistics',
         url=URL,
         version=VERSION,
         install_requires=check_dependencies(),

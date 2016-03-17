@@ -7,11 +7,11 @@ TriSurfaceMesh.py
 import numpy as np
 import matplotlib.tri as tri
 
-import pyFlowStat.ParserFunctions as ParserFunctions
-import pyFlowStat.TriSurface as TriSurface
+import pyFlowStat.old.ParserFunctions as ParserFunctions
+import pyFlowStat.old.TriSurface as TriSurface
 
 class TriSurfaceMesh(object):
-    
+
     # constructors #
     #--------------#
     def __init__(self,
@@ -23,16 +23,16 @@ class TriSurfaceMesh(object):
                  affTrans=None,
                  linTrans=None):
         '''
-        '''                     
+        '''
         self.triangulation = tri.Triangulation(x, y, triangles=triangles, mask=mask)
-    
-      
+
+
         # "private" member variable. Don't play with them if you are not sure...
         self.__z = z
-        
+
         self.__affTrans = affTrans
         self.__linTrans = linTrans
-    
+
     @classmethod
     def createFromPlane(cls,x,y,z,xViewBasis,yViewBasis=None,viewAnchor=(0,0,0),
                         srcBasisSrc=[[1,0,0],[0,1,0],[0,0,1]]):
@@ -51,8 +51,8 @@ class TriSurfaceMesh(object):
                    mask=None,
                    affTrans=afftrans,
                    linTrans=lintrans)
-    
-    
+
+
     @classmethod
     def readFromFoamFile(cls,
                          pointsFile,
@@ -64,31 +64,31 @@ class TriSurfaceMesh(object):
 
         '''
         Construct from a surface saved  by OpenFOAM in foamFile format.
-        
+
         Arguments:
             *pointsFile*: python string.
              Location of the point file. It holds the points (summits) of
              the triangulate grid.
-            
+
             *facesFile*: python string.
              Location of the faces file. It holds the triangles of the grid.
              If facesFile=None, the triangles are created with the Delauney
              method.
-             
+
             *viewAnchor*: python of numpy array. Shape = 3.
              Location of the (0,0) point of your grid. Defined in the source
              basis (meaning: the coordinate system of the OpenFOAM simulation)
-             
+
             *xViewBasis*: python of numpy array. Shape = 3.
-            
-            *yViewBasis*: python of numpy array. Shape = 3. If it's None, it 
+
+            *yViewBasis*: python of numpy array. Shape = 3. If it's None, it
              will be estimated. Works for surfaces normal to one coordinate
              direction
-            
+
             *srcBasisSrc*: python of numpy array. Shape = 3,3. Keep default.
         '''
-        
-                
+
+
         ptsSrc = ParserFunctions.parseFoamFile_sampledSurface(pointsFile)
         ptsTgt,afftrans,lintrans=transformPoints(ptsSrc=ptsSrc,
                                                 xViewBasis=xViewBasis,
@@ -111,7 +111,7 @@ class TriSurfaceMesh(object):
                    affTrans=afftrans,
                    linTrans=lintrans)
 
-    
+
     @classmethod
     def readFromHdf5(cls,
                      hdf5Parser,
@@ -122,7 +122,7 @@ class TriSurfaceMesh(object):
         '''
         Construct from a Hdf5Parser. The source Hdf5File must have at least the
         following structure:
-        
+
         hdf5file
         {
             mesh
@@ -133,43 +133,43 @@ class TriSurfaceMesh(object):
             otherKey1
             otherKey2
             ...
-            
+
         }
-        
+
         Arguments:
             *hdf5Parser*: a h5py parser.
              the hdf5Parser can by created as follow:
              >>> import h5py
              >>> hdf5Parser = h5py.File('sourceHdf5File','r')
-             
+
             *xViewBasis*: python array of shape=3.
              x direction of the triSurface, defined in the source coordinate
              system.
-        
+
             *yViewBasis*: python array of shape=3.
              y direction of the triSurface, defined in the source coordinate
              system. Default=None
-        
+
             *viewAnchor*: python array of shape=3.
              Origin of the surface coordinate system, defined in the source
              coordinate system. Default=(0,0,0)
-             
+
             *srcBasisSrc*: python array of shape=3x3.
              Default=[[1,0,0],[0,1,0],[0,0,1]].
-             
+
         Usage:
              >>> import h5py
              >>> from pyFlowStat.TriSurfaceMesh import TriSurfaceMesh
              >>> hdf5Parser = h5py.File('sourceHdf5File','r')
              >>> tsm = TriSurfaceMesh.readFromHdf5(hdf5Parser,xViewBasis=(1,0,0))
              >>> hdf5Parser.close()
-        
+
         '''
         # get mest data
         gName = 'mesh'
         ptsSrc = hdf5Parser[gName]['points'].value
         triangles = hdf5Parser[gName]['faces'].value
-        
+
         # create the transformation objects
         ptsTgt,afftrans,lintrans=transformPoints(ptsSrc=ptsSrc,
                                             xViewBasis=xViewBasis,
@@ -184,10 +184,10 @@ class TriSurfaceMesh(object):
                    triangles=triangles,
                    mask=None,
                    affTrans=afftrans,
-                   linTrans=lintrans)  
+                   linTrans=lintrans)
 
 
-    @classmethod   
+    @classmethod
     def readFromVTK(cls,
                     vtkFile,
                     viewAnchor,
@@ -201,10 +201,10 @@ class TriSurfaceMesh(object):
                                                           xViewBasis,
                                                           yViewBasis,
                                                           srcBasisSrc)
-       
+
         # read VTK file
         ptsSrc, triangles, vecsSrc = ParserFunctions.parseVTK_ugly_sampledSurface(vtkFile)
-        
+
         # Transform the points
         ptsTgt = np.zeros((ptsSrc.shape[0],ptsSrc.shape[1]))
         for i in range(ptsSrc.shape[0]):
@@ -220,50 +220,50 @@ class TriSurfaceMesh(object):
                    linTrans=lintrans)
 
     # getters #
-    #---------#  
+    #---------#
     @property
     def x(self):
         '''
         Get x coordinate of the grid points.
         '''
         return self.triangulation.x
-        
-    @property    
+
+    @property
     def y(self):
         '''
         Get y coordinate of the grid points.
         '''
         return self.triangulation.y
-        
+
     @property
     def triangles(self):
         '''
         Get triangles from the grid.
         '''
         return self.triangulation.triangles
-        
+
     @property
     def affTrans(self):
         '''
         Get affine transformation object.
         '''
         return self.__affTrans
-    
+
     @property
     def linTrans(self):
         '''
         Get linear transformation object.
         '''
         return self.__linTrans
-        
-        
+
+
     # class methods #
     #---------------#
 
     def rawPoints(self):
         '''
         Return the grid points in the source coordinate system.
-        
+
         Returns:
             *rawPoints*: numpy array of shape (N,3)
         '''
@@ -279,70 +279,70 @@ class TriSurfaceMesh(object):
         Calculate and return the area of the surface. This algorithm uses
         the Green theorem. From it, one can derived a general formula to
         calculate the area A of any simple polygon of n summits:
-        
+
         $$A = \frac{(x_{0}+x_n)(y_{0}-y_n)}{2} + \sum_{i=0}^{n-1}\frac{(x_{i+1}+x_i)(y_{i+1}-y_i)}{2}$$
-        
+
         Arguments:
             *none*
-            
+
         Returns
             *area*: python float()
              The total area of the mesh.
         '''
         xtri = self.x[self.triangles]
         ytri = self.y[self.triangles]
-        
+
         return np.sum( 0.5*( (xtri[:,1]+xtri[:,0])*(ytri[:,1]-ytri[:,0])
                             +(xtri[:,2]+xtri[:,1])*(ytri[:,2]-ytri[:,1])
                             +(xtri[:,0]+xtri[:,2])*(ytri[:,0]-ytri[:,2])) )
-    
+
     def getIndex(self,x_ref,y_ref):
         r_list=np.abs(self.x-x_ref)+np.abs(self.y-y_ref)
         i_ref= np.argmin(r_list)
         x=self.x[i_ref]
         y=self.y[i_ref]
         return i_ref,(x,y)
-    
+
     def getHorizontalLine(self,x_ref,y_ref):
         '''
         get the position and indices of a horizontal line through x_ref,y_ref
-        
+
         Returns
             x_pos,idx_x
         '''
 
         i_ref,(x,y)=self.getIndex(x_ref,y_ref)
-        
+
         idx_x=np.arange(len(self.y))[(self.y-y)==0]
         x_pos=self.x[idx_x]
-        
+
         return x_pos,idx_x
 
     def getVerticalLine(self,x_ref,y_ref):
         '''
         get the position and indices of a vertical line through x_ref,y_ref
-        
+
         Returns
             y_pos,idx_y
         '''
         i_ref,(x,y)=self.getIndex(x_ref,y_ref)
-        
+
         idx_y=np.arange(len(self.x))[(self.x-x)==0]
 
         y_pos=self.y[idx_y]
 
         return y_pos,idx_y
 
-                            
+
 # helper functions #
-#------------------#      
-                      
+#------------------#
+
 def getN(rawPoints):
     '''
     get normal of plane
-    
+
     *rawPoints*: numpy array of shape (N,3)
-    
+
     returns n, numpy array of shape 3
     '''
     norm=0
@@ -360,11 +360,11 @@ def getN(rawPoints):
 def getYBasis(n,xViewBasis):
     '''
     get y basis vector from x basis and plane normal
-    
+
     *n*: python of numpy array. Shape = 3.
-    
+
     *xViewBasis*: python of numpy array. Shape = 3.
-    
+
     returns yViewBasis, python of numpy array. Shape = 3.
     '''
     yViewBasis=np.cross(n,xViewBasis)
@@ -376,9 +376,9 @@ def getYBasis(n,xViewBasis):
 def getBasis(rawPoints,zIsVertical=True):
     '''
     fully automatic basis estimation (currently unused)
-    
+
     *rawPoints*: numpy array of shape (N,3)
-    
+
     returns xViewBasis,yViewBasis
     '''
     n=getN(rawPoints)
@@ -393,7 +393,7 @@ def getBasis(rawPoints,zIsVertical=True):
         yViewBasis=getYBasis(n,xViewBasis)
 
     return xViewBasis,yViewBasis
-    
+
 def transformPoints(ptsSrc,
                      xViewBasis,
                      yViewBasis=None,
@@ -405,16 +405,16 @@ def transformPoints(ptsSrc,
     if not yViewBasis:
         n=getN(ptsSrc)
         yViewBasis=getYBasis(n,xViewBasis)
-    
-    # create the transformation objects    
+
+    # create the transformation objects
     afftrans, lintrans = TriSurface.getTransformation(viewAnchor,
                                           xViewBasis,
                                           yViewBasis,
                                           srcBasisSrc)
-    
+
     # transform the points from the source basis to the target basis
     ptsTgt = np.zeros((ptsSrc.shape[0],ptsSrc.shape[1]))
     for i in range(ptsSrc.shape[0]):
         ptsTgt[i,:] = afftrans.srcToTgt(ptsSrc[i,:])
-        
+
     return ptsTgt,afftrans,lintrans
