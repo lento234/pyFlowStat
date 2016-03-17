@@ -8,9 +8,7 @@ pyFlowStat
 Changelog
 ---------
 
-#### 3.1.0.dev :
-
-- added `plotEnv`: custom plotting wrapper
+#### 4.0.1.dev :
 
 Authors
 -------
@@ -32,7 +30,6 @@ Dependencies
         * matplotlib (plotting)
         * modred
         * scipy
-        * seaborn (plotting)
 
     The following python modules should be installed for the advanced features:
         * h5py: for HDF5 save and load capabilites. See methods in
@@ -46,10 +43,15 @@ Dependencies
 Installation
 ------------
 
-To install the development version, run
+From source code:
 
-    pip install pyFlowStat
+    pip install -e /path/to/pyFlowStat
 
-or alternatively
+or from remote repository:
 
     pip install git+git://github.com/lento234/pyFlowStat.git@dev-lento
+
+Uninstall
+---------
+
+    pip uninstall pyFlowStat
